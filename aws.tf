@@ -13,43 +13,43 @@ resource "aws_ecs_task_definition" "simple-task" {
   container_definitions = "${file("task-definitions/simple-app-container.json")}"
 }
 
-resource "aws_vpc" "demoVPC" {
+resource "aws_vpc" "simple-cluster-vpc" {
   cidr_block = "200.0.0.0/16"
   tags {
-    Name = "ecsDemoVPC"
+    Name = "simple-cluster-vpc"
   }
 }
 
-resource "aws_internet_gateway" "demoIG" {
-  vpc_id = "${aws_vpc.demoVPC.id}"
+resource "aws_internet_gateway" "simple-cluster-vpc-ig" {
+  vpc_id = "${aws_vpc.simple-cluster-vpc.id}"
   tags {
-    Name = "ecsDemoIG"
+    Name = "simple-cluster-vpc-ig"
   }
 }
 
-resource "aws_subnet" "demoPubSN0-0" {
-  vpc_id = "${aws_vpc.demoVPC.id}"
+resource "aws_subnet" "simple-cluster-vpc-subnet-0" {
+  vpc_id = "${aws_vpc.simple-cluster-vpc.id}"
   cidr_block = "200.0.0.0/24"
   availability_zone = "ap-northeast-1a"
   tags {
-    Name = "ecsDemoPubSN0-0-0"
+    Name = "simple-cluster-vpc-subnet-0"
   }
 }
 
-resource "aws_route_table" "demoPubSN0-0RT" {
-  vpc_id = "${aws_vpc.demoVPC.id}"
+resource "aws_route_table" "simple-cluster-vpc-subnet-0-rt" {
+  vpc_id = "${aws_vpc.simple-cluster-vpc.id}"
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "${aws_internet_gateway.demoIG.id}"
+    gateway_id = "${aws_internet_gateway.simple-cluster-vpc-ig.id}"
   }
   tags {
-    Name = "demoPubSN0-0RT"
+    Name = "simple-cluster-vpc-subnet-0-rt"
   }
 }
 
-resource "aws_route_table_association" "demoPubSN0-0RTAssn" {
-  subnet_id = "${aws_subnet.demoPubSN0-0.id}"
-  route_table_id = "${aws_route_table.demoPubSN0-0RT.id}"
+resource "aws_route_table_association" "simple-cluster-vpc-subnet-0-rt-assn" {
+  subnet_id = "${aws_subnet.simple-cluster-vpc-subnet-0.id}"
+  route_table_id = "${aws_route_table.simple-cluster-vpc-subnet-0-rt.id}"
 }
 
 resource "aws_ecs_service" "simple-service" {
@@ -73,7 +73,7 @@ resource "aws_instance" "simple-cluster-instance" {
   instance_type = "${var.instance_type}"
   ami = "${lookup(var.aws_amis, var.region)}"
   # subnet_id = "subnet-26fb9450"
-  subnet_id = "${aws_subnet.demoPubSN0-0.id}" # ここ変えたら登録されなくなる
+  subnet_id = "${aws_subnet.simple-cluster-vpc-subnet-0.id}"
   associate_public_ip_address = true
   # vpc_security_group_ids = ["sg-e657c081"] # ここ変えたら登録されなくなる
   iam_instance_profile = "ecsInstanceRole"
