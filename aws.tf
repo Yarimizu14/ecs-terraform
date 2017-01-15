@@ -17,16 +17,31 @@ resource "aws_ecs_service" "simple-service" {
   name = "simple-service"
   cluster = "${aws_ecs_cluster.simple-cluster.id}"
   task_definition = "${aws_ecs_task_definition.simple-task.arn}"
-  # iam_role = "ecsServiceRole"
+  iam_role = "ecsServiceRole"
   desired_count = 1
 
-/*
   load_balancer {
-    elb_name = "simple-cluster-service-elb"
+    elb_name = "${aws_elb.simple-cluster-service-elb.name}"
     container_name = "simple-app"
     container_port = 5123
   }
-*/
+}
+
+resource "aws_security_group" "simple-service-app-sg" {
+  name = "simple-service-app-sg"
+
+  vpc_id = "${aws_vpc.simple-cluster-vpc.id}"
+
+  ingress {
+      from_port = 0
+      to_port = 80
+      protocol = "tcp"
+      security_groups = ["${aws_security_group.simple-service-elb-sg.id}"]
+  }
+
+  tags {
+    Name = "simple-service-app-sg"
+  }
 }
 
 resource "aws_instance" "simple-cluster-instance" {
@@ -36,7 +51,7 @@ resource "aws_instance" "simple-cluster-instance" {
   # subnet_id = "subnet-26fb9450"
   subnet_id = "${aws_subnet.simple-cluster-vpc-subnet-0.id}"
   associate_public_ip_address = true
-  # vpc_security_group_ids = ["sg-e657c081"] # ここ変えたら登録されなくなる
+  # vpc_security_group_ids = ["${aws_security_group.simple-service-app-sg.id}"]
   iam_instance_profile = "ecsInstanceRole"
   key_name = "${var.ssh_key_name}"
   tags = {
