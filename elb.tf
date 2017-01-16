@@ -4,10 +4,10 @@ resource "aws_security_group" "simple-service-elb-sg" {
   vpc_id = "${aws_vpc.simple-cluster-vpc.id}"
 
   ingress {
-      from_port = 0
-      to_port = 80
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags {
@@ -35,6 +35,7 @@ resource "aws_elb" "simple-cluster-service-elb" {
   }
 
   subnets = ["${aws_subnet.simple-cluster-vpc-subnet-0.id}"]
+  security_groups = ["${aws_vpc.simple-cluster-vpc.default_security_group_id}", "${aws_security_group.simple-service-elb-sg.id}"]
 
   cross_zone_load_balancing = true
   idle_timeout = 400
