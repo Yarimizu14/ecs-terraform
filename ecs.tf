@@ -15,8 +15,9 @@ resource "aws_ecs_service" "simple-service" {
   desired_count = 1
 
   load_balancer {
-    elb_name = "${aws_elb.simple-cluster-service-elb.name}"
+    # elb_name = "${aws_elb.simple-cluster-service-elb.name}"
+    target_group_arn = "${aws_alb_target_group.simple-app-target-group.arn}"
     container_name = "simple-app"
-    container_port = 9090
+    container_port = 5123
   }
 }
